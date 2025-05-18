@@ -1,0 +1,230 @@
+﻿<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Love from Humood</title>
+    <style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            overflow: hidden;
+            background: black;
+            font-family: 'Arial', sans-serif;
+            color: white;
+            direction: ltr;
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .from-box {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.1);
+            border: 2px solid white;
+            border-radius: 15px;
+            padding: 10px 20px;
+            font-size: 28px;
+            font-weight: bold;
+            user-select: none;
+            z-index: 10;
+        }
+
+        .heart-container {
+            position: absolute;
+            top: 35%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-45deg);
+            width: 220px;
+            height: 200px;
+            background: red;
+            z-index: 5;
+            pointer-events: none;
+        }
+
+            .heart-container::before,
+            .heart-container::after {
+                content: "";
+                position: absolute;
+                width: 220px;
+                height: 200px;
+                background: red;
+                border-radius: 50%;
+            }
+
+            .heart-container::before {
+                top: -110px;
+                left: 0;
+            }
+
+            .heart-container::after {
+                left: 110px;
+                top: 0;
+            }
+
+        .heart-letter {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: rotate(45deg) translate(-50%, -50%);
+            color: white;
+            font-size: 120px;
+            font-weight: bold;
+            text-shadow: 0 0 10px white, 0 0 20px white;
+            pointer-events: none;
+            user-select: none;
+            z-index: 10;
+        }
+
+        .footer-text {
+            position: absolute;
+            bottom: 50px;
+            width: 100%;
+            text-align: center;
+            font-size: 45px;
+            font-weight: bold;
+            color: #ff69b4;
+            text-shadow: 0 0 10px #ff69b4, 0 0 20px #ff69b4;
+            user-select: none;
+            z-index: 10;
+        }
+
+        #playButton {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            padding: 15px 40px;
+            font-size: 24px;
+            background: #ff69b4;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 0 12px #ff69b4;
+            user-select: none;
+            transition: background-color 0.3s ease;
+        }
+
+            #playButton:hover {
+                background: #ff1493;
+            }
+    </style>
+</head>
+<body>
+
+    <canvas id="heartCanvas"></canvas>
+
+    <div class="from-box">From Humood</div>
+
+    <div class="heart-container">
+        <div class="heart-letter">J</div>
+    </div>
+
+    <div class="footer-text" id="loveText">I love you</div>
+
+    <button id="playButton">Play Music</button>
+
+    <audio id="bgmusic" loop>
+        <source src="jj.mp3" type="audio/mpeg" />
+        Your browser does not support the audio element.
+    </audio>
+
+    <script>
+        // Setup canvas and hearts animation
+        const canvas = document.getElementById('heartCanvas');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+
+        function resize() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Array of "I love you" in multiple languages
+        const hearts = [];
+        const loveTexts = [
+            "I love you", "Je t'aime", "Te amo", "Ich liebe dich", "Ti amo",
+            "我爱你", "愛してる", "Я тебя люблю", "Eu te amo",
+            "사랑해요", "Ik hou van jou", "Σ' αγαπώ", "Jag älskar dig",
+            "Te iubesc", "Minä rakastan sinua", "Kocham cię", "Saya cinta kamu",
+            "Ngo oi nei", "Aloha wau ia 'oe", "أنا أحبك"
+        ];
+        let currentTextIndex = 0;
+
+        class Heart {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = height + Math.random() * 100;
+                this.size = Math.random() * 20 + 10;
+                this.speed = Math.random() * 1.5 + 0.5;
+                this.opacity = Math.random() * 0.5 + 0.5;
+                this.color = `rgba(${Math.floor(Math.random() * 255)},${Math.floor(Math.random() * 100)},${Math.floor(Math.random() * 255)},${this.opacity})`;
+            }
+            update() {
+                this.y -= this.speed;
+            }
+            draw() {
+                ctx.beginPath();
+                const x = this.x;
+                const y = this.y;
+                const size = this.size;
+                ctx.moveTo(x, y);
+                ctx.bezierCurveTo(x + size / 2, y - size, x + size * 1.5, y + size / 3, x, y + size);
+                ctx.bezierCurveTo(x - size * 1.5, y + size / 3, x - size / 2, y - size, x, y);
+                ctx.fillStyle = this.color;
+                ctx.fill();
+            }
+        }
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            hearts.push(new Heart());
+            for (let i = hearts.length - 1; i >= 0; i--) {
+                hearts[i].update();
+                hearts[i].draw();
+                if (hearts[i].y < -20) hearts.splice(i, 1);
+            }
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+        // Change bottom text every 1.5 seconds
+        const loveTextElem = document.getElementById('loveText');
+        setInterval(() => {
+            loveTextElem.textContent = loveTexts[currentTextIndex];
+            currentTextIndex = (currentTextIndex + 1) % loveTexts.length;
+        }, 1500);
+
+        // Play music on button click
+        const audio = document.getElementById('bgmusic');
+        const playBtn = document.getElementById('playButton');
+
+        playBtn.addEventListener('click', () => {
+            audio.play()
+                .then(() => {
+                    playBtn.style.display = 'none'; // hide button after playing
+                })
+                .catch(err => {
+                    alert('Unable to play audio. Please interact with the page and try again.');
+                    console.error('Playback error:', err);
+                });
+        });
+    </script>
+</body>
+</html>
